@@ -37,6 +37,7 @@ class AramDetails:
         items = []
         for row in rows:
             values = row.text.split("\n")
+            values[0] = int(values[0])
             items.append(values)
 
         self.driver.close()
@@ -81,6 +82,10 @@ print(os.getenv("MONGO_URL"))
 client = MongoClient(os.getenv("MONGO_URL"))
 db = client.aramid
 collection = db.champions_data
-results = collection.insert_many(aram_details.data)
+collection.delete_many({})
+count = 0
+for data in aram_details.data:
+    collection.insert_one(data)
+    count += 1
 
-print(f"Inserted ids: {len(results.inserted_ids)}")
+print(f"Inserted ids: {count}")
