@@ -78,7 +78,6 @@ class AramDetails:
 
 aram_details = AramDetails()
 aram_details.get_tierlist()
-print(os.getenv("MONGO_URL"))
 client = MongoClient(os.getenv("MONGO_URL"))
 db = client.aramid
 collection = db.champions_data
