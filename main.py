@@ -3,12 +3,15 @@ import time
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 from pymongo import MongoClient
 from dotenv import load_dotenv
 
 SCROLL_PAUSE_TIME = 0.5
 
 load_dotenv(override=True)
+
 
 class AramDetails:
     def __init__(self):
@@ -22,7 +25,9 @@ class AramDetails:
         last_height = self.driver.execute_script("return document.body.scrollHeight")
         while True:
             # Scroll down to bottom
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            self.driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);"
+            )
 
             # Wait to load page
             time.sleep(SCROLL_PAUSE_TIME)
@@ -38,41 +43,22 @@ class AramDetails:
         for row in rows:
             values = row.text.split("\n")
             values[0] = int(values[0])
+            values[1] = values[1].lower()
             items.append(values)
 
         self.driver.close()
         response_dict = [{k: v for (k, v) in zip(self.keys, infos)} for infos in items]
         self.data = response_dict
-    
+
     def get_default_browser(self):
         try:
+            service = Service(ChromeDriverManager().install())
             driver = webdriver.Chrome()
             driver.set_window_size(1100, 800)
             self.driver = driver
             return
         except NoSuchDriverException as ex:
-            print('chrome')
-            print(ex)
-
-        try:
-            driver = webdriver.Firefox()
-            driver.set_window_size(1100, 800)
-            self.driver = driver
-            return
-            
-        except NoSuchDriverException as ex:
-            print('firefox')
-            print(ex)
-
-
-        try:
-            driver = webdriver.Edge()
-            driver.set_window_size(1100, 800)
-            self.driver = driver
-            return
-
-        except NoSuchDriverException as ex:
-            print('edge')
+            print("chrome")
             print(ex)
 
 
