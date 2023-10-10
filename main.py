@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -53,9 +54,14 @@ class AramDetails:
     def get_default_browser(self):
         try:
             service = Service(ChromeDriverManager().install())
-            driver = webdriver.Chrome()
-            driver.set_window_size(1100, 800)
+            options = Options()
+            options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
+            options.add_argument('--single-process')
+            options.add_argument('--disable-dev-shm-usage')
+            driver = webdriver.Chrome(options=options)
             self.driver = driver
+            driver.set_window_size(1280, 1696)
             return
         except NoSuchDriverException as ex:
             print("chrome")
