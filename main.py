@@ -15,14 +15,17 @@ load_dotenv(override=True)
 
 
 class AramDetails:
+    db = MongoClient(os.getenv("MONGO_URL")).aramid
     def __init__(self):
         self.keys = ["rank", "name", "tier", "winrate", "pickrate", "matches"]
         self.driver = None
         self.data = []
+        self.patch = ""
 
     def get_tierlist(self):
         self.get_default_browser()
         self.driver.get(os.getenv("ARAM_WEB_URL"))
+        self.patch = self.driver.find_element(By.XPATH, '//*[@id="stats-tables-container-ID"]/div[2]/h1/div').text
         last_height = self.driver.execute_script("return document.body.scrollHeight")
         while True:
             # Scroll down to bottom
@@ -66,17 +69,22 @@ class AramDetails:
         except NoSuchDriverException as ex:
             print("chrome")
             print(ex)
+    
+    def insert_champions_data(self):
+        collection = self.db.champions_data
+        collection.delete_many({})
+        count = 0
+        for data in self.data:
+            collection.insert_one(data)
+            count += 1
+        print(f"Inserted ids: {count}")
 
+    def insert_patch_info(self):
+        collection = self.db["patch_info"]
+        collection.delete_many({})
+        collection.insert_one({"patch": self.patch})
 
 aram_details = AramDetails()
 aram_details.get_tierlist()
-client = MongoClient(os.getenv("MONGO_URL"))
-db = client.aramid
-collection = db.champions_data
-collection.delete_many({})
-count = 0
-for data in aram_details.data:
-    collection.insert_one(data)
-    count += 1
-
-print(f"Inserted ids: {count}")
+aram_details.insert_champions_data()
+aram_details.insert_patch_info()
